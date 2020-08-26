@@ -1,7 +1,7 @@
 import json, pprint, requests
 from os import system, name
 
-def clear():
+def clear_screen():
     # for windows
     if name == 'nt':
         _ = system('cls')
@@ -9,14 +9,7 @@ def clear():
     else: 
         _ = system('clear')
 
-def get_token():
-    pass
-
-def track_item(label):
-    url = "https://api.myfastway.com.au/api/track/label/"
-
-    r = requests.get(url + label)
-
+def print_request(r):
     print("HTTP Code", r.status_code)
     if r.text != "" and r.text != None:
         data = json.loads(r.text)
@@ -24,15 +17,34 @@ def track_item(label):
     else:
         print("No response.")
 
+def get_token():
+    url = "https://identity.fastway.org/connect/token"
+
+    grant_type = "{grant_type}"
+    client_id = "{client_id}"
+    client_secret = "{client_secret}"
+    scope = "{scope}"
+
+    auth = "?grant_type="+grant_type+"&client_id="+client_id+\
+        "&client_secret="+client_secret+"&scope="+scope
+    
+    return r = requests.post(url + auth)
+
+def track_item(token, label):
+    url = "https://api.myfastway.com.au/api/track/label/"
+
+    return r = requests.get(url + label)
+
 def main():
-    clear()
+    clear_screen()
+    token = get_token()
+    print_request(token)
     
     label = input("Enter tracking number: ")
+    result = track_item(token, label)
+    print_request(result)
     
-    track_item(label)
-
     input("Press [ENTER] to exit.")
-
-    clear()
+    clear_screen()
 
 main()
