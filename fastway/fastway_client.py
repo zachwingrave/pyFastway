@@ -28,12 +28,14 @@ def get_token():
     auth = "?grant_type="+grant_type+"&client_id="+client_id+\
         "&client_secret="+client_secret+"&scope="+scope
     
-    return r = requests.post(url + auth)
+    r = requests.post(url + auth)
+    return r
 
 def track_item(token, label):
     url = "https://api.myfastway.com.au/api/track/label/"
 
-    return r = requests.get(url + label)
+    r = requests.post(url + label)
+    return r
 
 def main():
     clear_screen()
