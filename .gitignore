@@ -130,4 +130,4 @@ dmypy.json
 
 # Authentication files
 fastway/fastway_auth.json
-fastway/fastway_token
+fastway/fastway_token.json
