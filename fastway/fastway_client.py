@@ -1,35 +1,58 @@
-from fastway_utils import requests, clear_screen, print_request
+from os import system, name
+import json, requests
+""" from requests_oauthlib import OAuth2Session """
 
-def get_token():
-    url = "https://identity.fastway.org/connect/token"
 
-    headers = {
-        "grant_type" : "{grant_type}",
-        "client_id" : "{client_id}",
-        "client_secret" : "{client_secret}",
-        "scope" : "{scope}"
-    }
+def clear_screen():
+    if name == 'nt':
+        system('cls')
+    else: 
+        system('clear')
 
-    return requests.post(url, headers=headers)
+def print_json(j):
+    print(json.dumps(j, indent=4, sort_keys=True))
+
+def print_request(r):
+    print("HTTP Code", r.status_code)
+    if r.text != "" and r.text != None:
+        print_json(json.loads(r.text))
+    else:
+        print("No response.")
+
+
+def read_token(file="fastway_token.json"):
+    with open(file, "r") as file:
+        return json.load(file)
+
+
+def get_token(file="fastway_auth.json"):
+    with open(file, "r") as file:
+        auth = json.load(file)
+    
+    """ oauth = OAuth2Session(client_id=auth["client_id"], scope=auth["scope"])
+    return oauth.fetch_token(auth["url"], client_secret=auth["client_secret"]) """
+
+    print_json(auth)
+
+    """ Get token with GET request """
+
+    return read_token()
+
 
 def track_item(token, label):
     url = "https://api.myfastway.com.au/api/track/label/"
-    
-    with open("fastway_token",'r') as auth:
-        headers = { "Authorization" : auth.readlines()[0] }
+    return requests.get(url + label, headers=token)
 
-    return requests.get(url + label, headers=headers)
 
 def main():
     clear_screen()
-    token = get_token()
-    print_request(token)
-    
+
     label = input("Enter tracking number: ")
-    result = track_item(token, label)
+    result = track_item(get_token(), label)
     print_request(result)
     
     input("Press [ENTER] to exit.")
     clear_screen()
+
 
 main()
