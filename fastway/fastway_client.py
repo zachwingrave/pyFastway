@@ -27,16 +27,9 @@ def read_token(file="fastway_token.json"):
 
 def get_token(file="fastway_auth.json"):
     with open(file, "r") as file:
-        auth = json.load(file)
-    
-    """ oauth = OAuth2Session(client_id=auth["client_id"], scope=auth["scope"])
-    return oauth.fetch_token(auth["url"], client_secret=auth["client_secret"]) """
+        auth = json.load(file)["oauth"]
 
-    print_json(auth)
-
-    """ Get token with GET request """
-
-    return read_token()
+    return requests.get(auth["authority"], headers=auth)
 
 
 def track_item(token, label):
