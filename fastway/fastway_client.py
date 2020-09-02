@@ -1,4 +1,5 @@
 from os import system, name
+from time import time
 import json, requests
 
 def clear_screen():
@@ -38,9 +39,13 @@ def main():
     token = json.loads(get_token(authorization))
     token_header = get_token_header(token)
     
-    label = input("Enter tracking number: ") 
+    label = input("Enter tracking number: ")
+    start = time()
     result = track_item(token_header, label)
     print_request(result)
+
+    end = time()
+    print("Took", end-start, "seconds to fetch.")
 
     input("Press [ENTER] to exit.")
     
