@@ -30,14 +30,16 @@ def get_token(file=TOKEN_FILE):
         with open(file, "r") as file:
             token = load(file)
             if datetime.now().isoformat() < token["token_expiry"]:
+                print("using existing token")
                 return token
             else:
+                print("renewing token because date")
                 return renew_token(file)
     except FileNotFoundError:
+        print("renewing token because no token")
         return renew_token(file)
 
 def renew_token(file=TOKEN_FILE):
-    print("Generating new token...")
     url = "https://identity.fastway.org/connect/token"
     response = post(url, data=get_authorization())
     
@@ -47,17 +49,21 @@ def renew_token(file=TOKEN_FILE):
 
     with open(file, "w") as file:
         dump(token, file, indent=4, sort_keys=True)
-    
-    return token
 
-def get_expiry(token=get_token()):
-    if token:
-        return token["token_expiry"]
-    else:
-        return False
+    # file = TOKEN_FILE
+
+    # print("printing contents of token_file after new token")
+
+    # with open(file, "r") as file:
+    #     print(dumps(load(file), indent=4, sort_keys=True))
+
+    print("Generated new access token:", token["access_token"][-4:])
+
+    return token
 
 def get_header(token=get_token()):
     if token:
+        print("Using token ending in", token["access_token"][-4:])
         credentials = (token["token_type"], token["access_token"])
         return { "Authorization": " ".join(credentials) }
     else:
@@ -77,11 +83,19 @@ def track_items(labels=("BD0010915392")):
     return results
 
 def main():
+    # renew_token()
+
+    print("start main")
+
     response = track_item()
     
     print(dumps(response, indent=4, sort_keys=True))
 
-    input("Press [ENTER] to exit:")  
-    system(CLEAR)
+    input("Press [ENTER] to exit:")
 
+    print("end main")
+
+
+print("start program")
 main()
+print("end program")
