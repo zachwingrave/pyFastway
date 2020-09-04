@@ -30,13 +30,10 @@ def get_token(file=TOKEN_FILE):
         with open(file, "r") as file:
             token = load(file)
             if datetime.now().isoformat() < token["token_expiry"]:
-                print("using existing token")
                 return token
             else:
-                print("renewing token because date")
                 return renew_token(file)
     except FileNotFoundError:
-        print("renewing token because no token")
         return renew_token(file)
 
 def renew_token(file=TOKEN_FILE):
@@ -50,20 +47,13 @@ def renew_token(file=TOKEN_FILE):
     with open(file, "w") as file:
         dump(token, file, indent=4, sort_keys=True)
 
-    # file = TOKEN_FILE
-
-    # print("printing contents of token_file after new token")
-
-    # with open(file, "r") as file:
-    #     print(dumps(load(file), indent=4, sort_keys=True))
-
     print("Generated new access token:", token["access_token"][-4:])
 
     return token
 
-def get_header(token=get_token()):
+def get_header(token):
     if token:
-        print("Using token ending in", token["access_token"][-4:])
+        print("Fetched with access token:", token["access_token"][-4:])
         credentials = (token["token_type"], token["access_token"])
         return { "Authorization": " ".join(credentials) }
     else:
@@ -71,31 +61,27 @@ def get_header(token=get_token()):
 
 def track_item(label="BD0010915392"):
     url = "https://api.myfastway.com.au/api/track/label/"
-    response = get("".join((url, label)), headers=get_header())
+    token = get_token()
+    response = get("".join((url, label)), headers=get_header(token))
     return loads(response.text)["data"][-1]
 
 def track_items(labels=("BD0010915392")):
     url = "https://api.myfastway.com.au/api/track/label/"
+    token = get_token()
     results = []
     for label in labels:
-        response = get("".join((url, label)), headers=get_header())
+        response = get("".join((url, label)), headers=get_header(token))
         results.append(loads(response.text)["data"][-1])
     return results
 
 def main():
-    # renew_token()
-
-    print("start main")
+    system(CLEAR)
 
     response = track_item()
     
     print(dumps(response, indent=4, sort_keys=True))
 
     input("Press [ENTER] to exit:")
+    system(CLEAR)
 
-    print("end main")
-
-
-print("start program")
 main()
-print("end program")
