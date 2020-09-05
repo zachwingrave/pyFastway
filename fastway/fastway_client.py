@@ -14,72 +14,55 @@ ROOT_DIR = path.dirname(path.abspath(__file__))
 AUTH_FILE = SEP.join((ROOT_DIR, "fastway_auth.json"))
 TOKEN_FILE = SEP.join((ROOT_DIR, "fastway_token.json"))
 
-def get_path(file):
-    return SEP.join((ROOT_DIR, file))
-
-def get_authorization(file=AUTH_FILE):
-    try:
-        with open(file, "r") as file:
-            return load(file)
-    except FileNotFoundError as exception:
-        print(exception)
-        return False
+TOKEN_URL = "https://identity.fastway.org/connect/token"
+TRACK_URL = "https://api.myfastway.com.au/api/track/label/"
 
 def get_token(file=TOKEN_FILE):
     try:
         with open(file, "r") as file:
             token = load(file)
             if datetime.now().isoformat() < token["token_expiry"]:
-                return token
+                print("Fetched with access token:", token["access_token"][-4:])
+                credentials = (token["token_type"], token["access_token"])
+                return { "Authorization": " ".join(credentials) }
             else:
-                return renew_token(file)
+                return renew_token()
     except FileNotFoundError:
-        return renew_token(file)
+        return renew_token()
 
-def renew_token(file=TOKEN_FILE):
-    url = "https://identity.fastway.org/connect/token"
-    response = post(url, data=get_authorization())
+def renew_token(files=(AUTH_FILE, TOKEN_FILE)):
+    try:
+        with open(files[0], "r") as file:
+            authorization = load(file)
+    except FileNotFoundError as exception:
+        return exception
+    
+    response = post(TOKEN_URL, data=authorization)
     
     token = loads(response.text)
     expiry = datetime.now() + timedelta(hours=1)
     token["token_expiry"] = expiry.isoformat()
 
-    with open(file, "w") as file:
+    with open(files[1], "w") as file:
         dump(token, file, indent=4, sort_keys=True)
 
     print("Generated new access token:", token["access_token"][-4:])
 
-    return token
+    return get_token()
 
-def get_header(token):
-    if token:
-        print("Fetched with access token:", token["access_token"][-4:])
-        credentials = (token["token_type"], token["access_token"])
-        return { "Authorization": " ".join(credentials) }
-    else:
-        return False
-
-def track_item(label="BD0010915392"):
-    url = "https://api.myfastway.com.au/api/track/label/"
-    token = get_token()
-    response = get("".join((url, label)), headers=get_header(token))
-    return loads(response.text)["data"][-1]
-
-def track_items(labels=("BD0010915392")):
-    url = "https://api.myfastway.com.au/api/track/label/"
-    token = get_token()
+def track_items(labels=("BD0010915392",)):
     results = []
     for label in labels:
-        response = get("".join((url, label)), headers=get_header(token))
+        response = get("".join((TRACK_URL, label)), headers=get_token())
         results.append(loads(response.text)["data"][-1])
     return results
 
 def main():
     system(CLEAR)
-
-    response = track_item()
+    response = track_items()
     
-    print(dumps(response, indent=4, sort_keys=True))
+    for item in response:
+        print(dumps(item, indent=4, sort_keys=True))
 
     input("Press [ENTER] to exit:")
     system(CLEAR)
