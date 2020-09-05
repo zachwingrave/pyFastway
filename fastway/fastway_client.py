@@ -67,4 +67,5 @@ def main():
     input("Press [ENTER] to exit:")
     system(CLEAR)
 
-main()
+if __name__ == "__main__":
+    main()
