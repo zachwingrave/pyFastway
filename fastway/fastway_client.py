@@ -54,7 +54,7 @@ def renew_token(files=(AUTH_FILE, TOKEN_FILE)):
 
     return get_token()
 
-def track_items(labels=("BD0010915392",)):
+def track_items(labels=["BD0010915392"]):
     results = []
     for label in labels:
         response = get("".join((TRACK_URL, label)), headers=get_token())
@@ -63,7 +63,8 @@ def track_items(labels=("BD0010915392",)):
 
 def main():
     system(CLEAR)
-    response = track_items()
+    labels = ["BD0010915392"]
+    response = track_items(labels)
 
     for item in response:
         print(dumps(item, indent=4, sort_keys=True))
