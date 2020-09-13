@@ -132,5 +132,8 @@ dmypy.json
 fastway/fastway_auth.json
 fastway/fastway_token.json
 
+# Tracking files
+tracking
+
 # VS Code development files.
 *.code-workspace

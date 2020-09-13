@@ -35,10 +35,10 @@ def renew_token(files=(AUTH_FILE, TOKEN_FILE)):
         with open(files[0], "r") as file:
             authorization = load(file)
     except FileNotFoundError as exception:
-        return exception
-    
+        raise exception
+
     response = post(TOKEN_URL, data=authorization)
-    
+
     token = loads(response.text)
     expiry = datetime.now() + timedelta(hours=1)
     token["token_expiry"] = expiry.isoformat()
@@ -60,7 +60,7 @@ def track_items(labels=("BD0010915392",)):
 def main():
     system(CLEAR)
     response = track_items()
-    
+
     for item in response:
         print(dumps(item, indent=4, sort_keys=True))
 
