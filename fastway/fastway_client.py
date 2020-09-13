@@ -13,9 +13,13 @@ else:
 ROOT_DIR = path.dirname(path.abspath(__file__))
 AUTH_FILE = SEP.join((ROOT_DIR, "fastway_auth.json"))
 TOKEN_FILE = SEP.join((ROOT_DIR, "fastway_token.json"))
+LABELS_FILE = SEP.join((ROOT_DIR, "tracking/labels.csv"))
 
 TOKEN_URL = "https://identity.fastway.org/connect/token"
 TRACK_URL = "https://api.myfastway.com.au/api/track/label/"
+
+def get_labels(file=LABELS_FILE):
+    pass
 
 def get_token(file=TOKEN_FILE):
     try:
