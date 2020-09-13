@@ -25,11 +25,7 @@ TRACK_URL = "https://api.myfastway.com.au/api/track/label/"
 
 def get_labels(file=LABELS_FILE):
     with open(file, "r") as file:
-        results = read_csv(file, usecols=["Tracking Number"]).values.tolist()
-        short_results = []
-        for i in range(10):
-            short_results.append(results[i])
-        return short_results
+        return read_csv(file, usecols=["Tracking Number"]).values.tolist()
 
 def get_token(file=TOKEN_FILE):
     try:
@@ -68,7 +64,7 @@ def track_items(labels=["BD0010915392"]):
     results = []
     for label in labels:
         response = get("".join((TRACK_URL, label)), headers=get_token())
-        results.append(loads(response.text)["data"][-1])
+        results.append(loads(response.text)["data"])
     return results
 
 def main():
