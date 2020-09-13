@@ -11,9 +11,12 @@ else:
     CLEAR = "clear"
 
 ROOT_DIR = path.dirname(path.abspath(__file__))
-AUTH_FILE = SEP.join((ROOT_DIR, "fastway_auth.json"))
-TOKEN_FILE = SEP.join((ROOT_DIR, "fastway_token.json"))
-LABELS_FILE = SEP.join((ROOT_DIR, "tracking/labels.csv"))
+AUTH_DIR = SEP.join((ROOT_DIR, "auth"))
+TRACK_DIR = SEP.join((ROOT_DIR, "track"))
+
+AUTH_FILE = SEP.join((AUTH_DIR, "fastway_auth.json"))
+TOKEN_FILE = SEP.join((AUTH_DIR, "fastway_token.json"))
+LABELS_FILE = SEP.join((TRACK_DIR, "labels.csv"))
 
 TOKEN_URL = "https://identity.fastway.org/connect/token"
 TRACK_URL = "https://api.myfastway.com.au/api/track/label/"
