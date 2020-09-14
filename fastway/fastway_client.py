@@ -24,7 +24,9 @@ TRACK_DIR = SEP.join((ROOT_DIR, "track"))
 
 AUTH_FILE = SEP.join((AUTH_DIR, "fastway_auth.json"))
 TOKEN_FILE = SEP.join((AUTH_DIR, "fastway_token.json"))
+
 LABELS_FILE = SEP.join((TRACK_DIR, "labels.csv"))
+RESULTS_FILE = SEP.join((TRACK_DIR, "results.csv"))
 
 TOKEN_URL = "https://identity.fastway.org/connect/token"
 TRACK_URL = "https://api.myfastway.com.au/api/track/label/"
@@ -88,53 +90,78 @@ def renew_token(files=(AUTH_FILE, TOKEN_FILE)):
     return get_token()
 
 def track_items(labels=["BD0010915392","BD0010915414"]):
-    results = []
-    for label in labels:
-        try:
-            response = get("".join((TRACK_URL, label)), headers=get_token())
-            response_data = loads(response.text)["data"]
-            if response_data != NOSCAN:
-                results.append(response_data[-1])
-            else:
-                results.append(response_data)
-        except IndexError as exception:
-            print(": ".join(("Error", str(response.status_code), label)))
-            raise exception
-    return results
-
-def main():
-    system(CLEAR)
     start = time()
+    results = []
+    records = 0
 
     # set_loading(True)
     # print("LOADING in main():", LOADING)
     # Thread(daemon=True, target=animate).start()
 
-    labels = get_labels()
-    response = track_items(labels)
-
-    # set_loading(False)
+    for label in labels:
+        try:
+            token = get_token()
+            token_id = token["Authorization"][-4:]
+            response = get("".join((TRACK_URL, label)), headers=token)
+            response_data = loads(response.text)["data"]
+            if response_data == NOSCAN:
+                data = {
+                    "description": "This parcel was never scanned.",
+                    "franchiseCode": "UNK",
+                    "franchiseName": "Unknown",
+                    "labelNo": label,
+                    "scanType": "N",
+                    "scanTypeDescription": "No scan",
+                    "scannedDateTime": None,
+                    "status": "NSC"
+                }
+                response_data.append(data)
+            results.append(response_data[-1])
+            records = records + 1
+        except IndexError as exception:
+            print(": ".join(("Error", str(response.status_code), label)))
+            raise exception
     duration = time() - start
-    length = str(len(response))
-    token = get_token()["Authorization"][-4:]
+    return {
+        "results": results,
+        "duration": str(duration),
+        "token_id": str(token_id),
+        "records": str(records)
+    }
 
+def print_results(response):
     counter = 0
+    for item in response["results"]:
+        if item == NOSCAN:
+            print("Error: No data for this record.")
+        else:
+            print(dumps(item, indent=4, sort_keys=True))
+        print(" ".join(("Record", str(counter + 1), "of", response["records"])))
+        print(" ".join(("Fetched with access token:", response["token_id"])))
+        print(" ".join(("Fetched in", str(response["duration"]), "seconds.")))
+        input("Press [ENTER] to continue: ")
+        counter = counter + 1
 
+def write_results(response, file=RESULTS_FILE):
     for item in response:
         system(CLEAR)
         if item == NOSCAN:
             print("Error: No data for this record.")
         else:
             print(dumps(item, indent=4, sort_keys=True))
-        print(" ".join(("Record", str(counter + 1), "of", length)))
-        print(" ".join(("Fetched with access token:", token)))
-        print(" ".join(("Fetched in", str(duration), "seconds.")))
-        input("Press [ENTER] to continue: ")
-        counter = counter + 1
 
+def main():
     system(CLEAR)
-    print("Done.")
-    input("Press [ENTER] to exit: ")
+
+    labels = get_labels()
+    response = track_items()
+    print_results(response)
+    # write_results(response)
+
+    for item in response:
+        print(dumps(item, indent=4, sort_keys=True))
+        input("Press [ENTER] to continue: ")
+
     system(CLEAR)
 
 if __name__ == "__main__":
