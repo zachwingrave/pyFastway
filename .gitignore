@@ -128,9 +128,5 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# Fastway files
-fastway/auth/*
-fastway/track/*
-
 # VS Code files
 *.code-workspace
