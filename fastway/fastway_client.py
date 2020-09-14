@@ -32,7 +32,6 @@ def get_token(file=TOKEN_FILE):
         with open(file, "r") as file:
             token = load(file)
             if datetime.now().isoformat() < token["token_expiry"]:
-                # print("Fetched with access token:", token["access_token"][-4:])
                 credentials = (token["token_type"], token["access_token"])
                 return { "Authorization": " ".join(credentials) }
             else:
@@ -79,19 +78,25 @@ def main():
 
     response = track_items(labels_str)
 
-    end = time()
-    duration = end - start
+    duration = time() - start
     length = str(len(response))
+
+    with open(TOKEN_FILE, "r") as file:
+        token = load(file)
+        token = token["access_token"][-4:]
+
     counter = 0
 
     for item in response:
         system(CLEAR)
         print(dumps(item, indent=4, sort_keys=True))
         print(" ".join(("Record", str(counter + 1), "of", length)))
+        print(" ".join(("Fetched with access token:", token)))
         print(" ".join(("Fetched in", str(duration), "seconds.")))
         input("Press [ENTER] to continue: ")
         counter = counter + 1
 
+    system(CLEAR)
     print("Done.")
     input("Press [ENTER] to exit: ")
     system(CLEAR)
