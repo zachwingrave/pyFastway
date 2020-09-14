@@ -2,8 +2,11 @@ from datetime import datetime, timedelta
 from json import dump, dumps, load, loads
 from os import system, name, path
 from requests import get, post
+from threading import Thread
+from time import time, sleep
+from itertools import cycle
 from pandas import read_csv
-from time import time
+from sys import stdout
 
 if name == "nt":
     SEP = "\\"
@@ -13,6 +16,7 @@ else:
     CLEAR = "clear"
 
 NOSCAN = []
+# LOADING = False
 
 ROOT_DIR = path.dirname(path.abspath(__file__))
 AUTH_DIR = SEP.join((ROOT_DIR, "auth"))
@@ -24,6 +28,26 @@ LABELS_FILE = SEP.join((TRACK_DIR, "labels.csv"))
 
 TOKEN_URL = "https://identity.fastway.org/connect/token"
 TRACK_URL = "https://api.myfastway.com.au/api/track/label/"
+
+# def animate():
+#     frames = ["|", "/", "-", "\\"]
+#     message = "Loading, please wait..."
+
+#     print("LOADING in animate():", LOADING)
+
+#     while LOADING:
+#         print("Test")
+#         sleep(1)
+#         for frame in frames:
+#             stdout.write(message, frame)
+#             stdout.flush()
+#             sleep(0.1)
+
+#     print("Done loading.")
+
+# def set_loading(loading):
+#     LOADING = loading
+#     return LOADING
 
 def get_labels(file=LABELS_FILE):
     with open(file, "r") as file:
@@ -82,9 +106,14 @@ def main():
     system(CLEAR)
     start = time()
 
+    # set_loading(True)
+    # print("LOADING in main():", LOADING)
+    # Thread(daemon=True, target=animate).start()
+
     labels = get_labels()
     response = track_items(labels)
 
+    # set_loading(False)
     duration = time() - start
     length = str(len(response))
     token = get_token()["Authorization"][-4:]
