@@ -132,6 +132,7 @@ def track_items(labels=["BD0010915392","BD0010915414"]):
 def print_results(response):
     counter = 0
     for item in response["results"]:
+        system(CLEAR)
         if item == NOSCAN:
             print("Error: No data for this record.")
         else:
@@ -143,24 +144,15 @@ def print_results(response):
         counter = counter + 1
 
 def write_results(response, file=RESULTS_FILE):
-    for item in response:
-        system(CLEAR)
-        if item == NOSCAN:
-            print("Error: No data for this record.")
-        else:
-            print(dumps(item, indent=4, sort_keys=True))
+    pass
 
 def main():
     system(CLEAR)
 
     labels = get_labels()
-    response = track_items()
+    response = track_items(labels)
     print_results(response)
     # write_results(response)
-
-    for item in response:
-        print(dumps(item, indent=4, sort_keys=True))
-        input("Press [ENTER] to continue: ")
 
     system(CLEAR)
 
