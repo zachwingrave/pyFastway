@@ -112,7 +112,6 @@ def track_items(labels=["BD0010915392","BD0010915414"]):
 def print_results(response):
     counter = 0
     for item in response["results"]:
-        system(CLEAR)
         if item == NOSCAN:
             print("Error: No data for this record.")
         else:
@@ -122,6 +121,7 @@ def print_results(response):
         print(" ".join(("Fetched in", str(response["duration"]), "seconds.")))
         input("Press [ENTER] to continue: ")
         counter = counter + 1
+        system(CLEAR)
 
 def write_results(response, file=RESULTS_FILE):
     pass
