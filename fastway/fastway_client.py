@@ -105,10 +105,11 @@ def track_items(labels=["BD0010915392", "BD0010915414"]):
             raise exception
     duration = round(time() - start, 2)
     return {
-        "results": results,
+        "datetime": datetime.now().isoformat(),
         "duration": str(duration),
-        "token_id": str(token_id),
-        "records": str(records)
+        "records": str(records),
+        "results": results,
+        "token_id": str(token_id)
     }
 
 def print_results(response):
@@ -130,7 +131,7 @@ def write_results(response, file=RESULTS_FILE):
         csv_writer.writerow(headers)
 
         for item in response["results"]:
-            pass
+            csv_writer.writerow(item.values())
 
     response.pop("results", None)
     response["records"] = " ".join(("Fetched ", response["records"], "records"))
@@ -146,8 +147,9 @@ def main():
 
     labels = get_labels()
     response = track_items()
-    # print_results(response)
-    write_results(response)
+    # write_results(response)
+
+    print_results(response)
 
     system(CLEAR)
 
