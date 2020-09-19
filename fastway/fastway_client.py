@@ -1,6 +1,7 @@
 from json import dump, dumps, load, loads
 from requests import get, post
 from pandas import read_csv
+from csv import writer
 
 from datetime import datetime, timedelta
 from os import system, name, path
@@ -25,6 +26,7 @@ TRACK_DIR = SEP.join((ROOT_DIR, "track"))
 AUTH_FILE = SEP.join((AUTH_DIR, "fastway_auth.json"))
 TOKEN_FILE = SEP.join((AUTH_DIR, "fastway_token.json"))
 
+LOG_FILE = SEP.join((TRACK_DIR, "log.json"))
 LABELS_FILE = SEP.join((TRACK_DIR, "labels.csv"))
 RESULTS_FILE = SEP.join((TRACK_DIR, "results.csv"))
 
@@ -69,7 +71,7 @@ def renew_token(files=(AUTH_FILE, TOKEN_FILE)):
     print("Generated new access token:", token["access_token"][-4:])
     return get_token()
 
-def track_items(labels=["BD0010915392","BD0010915414"]):
+def track_items(labels=["BD0010915392", "BD0010915414"]):
     start = time()
     results = []
     records = 0
@@ -101,7 +103,7 @@ def track_items(labels=["BD0010915392","BD0010915414"]):
         except IndexError as exception:
             print(": ".join(("Error", str(response.status_code), label)))
             raise exception
-    duration = time() - start
+    duration = round(time() - start, 2)
     return {
         "results": results,
         "duration": str(duration),
@@ -112,27 +114,40 @@ def track_items(labels=["BD0010915392","BD0010915414"]):
 def print_results(response):
     counter = 0
     for item in response["results"]:
-        if item == NOSCAN:
-            print("Error: No data for this record.")
-        else:
-            print(dumps(item, indent=4, sort_keys=True))
+        print(dumps(item, indent=4, sort_keys=True))
         print(" ".join(("Record", str(counter + 1), "of", response["records"])))
         print(" ".join(("Fetched with access token:", response["token_id"])))
-        print(" ".join(("Fetched in", str(response["duration"]), "seconds.")))
+        print(" ".join(("Fetched in", str(response["duration"]), "seconds")))
         input("Press [ENTER] to continue: ")
         counter = counter + 1
         system(CLEAR)
 
 def write_results(response, file=RESULTS_FILE):
-    pass
+    with open(file, "w", newline="") as file:
+        csv_writer = writer(file)
+
+        headers = response["results"][0].keys()
+        csv_writer.writerow(headers)
+
+        for item in response["results"]:
+            pass
+
+    response.pop("results", None)
+    response["records"] = " ".join(("Fetched ", response["records"], "records"))
+    response["token_id"] = " ".join(("Fetched with access token:", response["token_id"]))
+    response["duration"] = " ".join(("Fetched in", str(response["duration"]), "seconds"))
+
+    with open(LOG_FILE, "a", newline="\n") as file:
+        dump(response, file, indent=4, sort_keys=True)
+        file.write("\n")
 
 def main():
     system(CLEAR)
 
     labels = get_labels()
-    response = track_items(labels)
-    print_results(response)
-    # write_results(response)
+    response = track_items()
+    # print_results(response)
+    write_results(response)
 
     system(CLEAR)
 
