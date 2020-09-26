@@ -10,6 +10,9 @@ from time import time
 from threading import Thread
 from itertools import cycle
 
+"""
+Define filepath separator and clear command per OS.
+"""
 if name == "nt":
     SEP = "\\"
     CLEAR = "cls"
@@ -17,19 +20,34 @@ else:
     SEP = "/"
     CLEAR = "clear"
 
+"""
+Labels with no scans return response.text of an empty list.
+"""
 NOSCAN = []
 
+"""
+Directory file path constants for this project.
+"""
 ROOT_DIR = path.dirname(path.abspath(__file__))
 AUTH_DIR = SEP.join((ROOT_DIR, "auth"))
 TRACK_DIR = SEP.join((ROOT_DIR, "track"))
 
+"""
+Authentication file path constants for this project.
+"""
 AUTH_FILE = SEP.join((AUTH_DIR, "fastway_auth.json"))
 TOKEN_FILE = SEP.join((AUTH_DIR, "fastway_token.json"))
 
+"""
+Log file path constants for this project.
+"""
 LOG_FILE = SEP.join((TRACK_DIR, "log.json"))
 LABELS_FILE = SEP.join((TRACK_DIR, "labels.csv"))
 RESULTS_FILE = SEP.join((TRACK_DIR, "results.csv"))
 
+"""
+Endpoint URLs for the myFastway API service.
+"""
 TOKEN_URL = "https://identity.fastway.org/connect/token"
 TRACK_URL = "https://api.myfastway.com.au/api/track/label/"
 
