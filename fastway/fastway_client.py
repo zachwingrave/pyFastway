@@ -92,6 +92,7 @@ def track_items(labels=["BD0010915392", "BD0010915414"]):
         response_data = loads(response.text)["data"]
         if response_data == NOSCAN:
             data = {
+                "courierNo": None,
                 "description": "This parcel was never scanned.",
                 "franchiseCode": "UNK",
                 "franchiseName": "Unknown",
@@ -103,19 +104,19 @@ def track_items(labels=["BD0010915392", "BD0010915414"]):
             }
             response_data.append(data)
         results.append(response_data[-1])
-        print(response_data[-1])
+        print(response_data[-1].keys())
         input("continue?")
 
     curr_date = datetime.now().isoformat()
-    duration = round(time() - start, 2)
     token_id = token["Authorization"][-4:]
+    duration = round(time() - start, 2)
     records = len(results)
 
     return {
         "results": results,
         "datetime": curr_date,
-        "duration": str(duration),
         "token_id": str(token_id),
+        "duration": str(duration),
         "records": str(records),
     }
 
