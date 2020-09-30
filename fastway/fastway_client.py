@@ -84,38 +84,39 @@ def track_items(labels=["BD0010915392", "BD0010915414"]):
     """Return tracking API results for labels as a dict."""
     start = time()
     results = []
-    records = 0
+
+    token = get_token()
 
     for label in labels:
-        try:
-            token = get_token()
-            token_id = token["Authorization"][-4:]
-            response = get("".join((TRACK_URL, label)), headers=token)
-            response_data = loads(response.text)["data"]
-            if response_data == NOSCAN:
-                data = {
-                    "description": "This parcel was never scanned.",
-                    "franchiseCode": "UNK",
-                    "franchiseName": "Unknown",
-                    "labelNo": label,
-                    "scanType": "N",
-                    "scanTypeDescription": "No scan",
-                    "scannedDateTime": None,
-                    "status": "NSC"
-                }
-                response_data.append(data)
-            results.append(response_data[-1])
-            records = records + 1
-        except IndexError as exception:
-            print(": ".join(("Error", str(response.status_code), label)))
-            raise exception
+        response = get("".join((TRACK_URL, label)), headers=token)
+        response_data = loads(response.text)["data"]
+        if response_data == NOSCAN:
+            data = {
+                "description": "This parcel was never scanned.",
+                "franchiseCode": "UNK",
+                "franchiseName": "Unknown",
+                "labelNo": label,
+                "scanType": "N",
+                "scanTypeDescription": "No scan",
+                "scannedDateTime": None,
+                "status": "NSC"
+            }
+            response_data.append(data)
+        results.append(response_data[-1])
+        print(response_data[-1])
+        input("continue?")
+
+    curr_date = datetime.now().isoformat()
     duration = round(time() - start, 2)
+    token_id = token["Authorization"][-4:]
+    records = len(results)
+
     return {
-        "datetime": datetime.now().isoformat(),
-        "duration": str(duration),
-        "records": str(records),
         "results": results,
-        "token_id": str(token_id)
+        "datetime": curr_date,
+        "duration": str(duration),
+        "token_id": str(token_id),
+        "records": str(records),
     }
 
 def print_results(response):
