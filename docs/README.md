@@ -23,7 +23,8 @@ Examples:
 
 ```
 python pyFastway/fastway/fastway_client.py print
-
+```
+```
 python pyFastway/fastway/fastway_client.py write
 ```
 
