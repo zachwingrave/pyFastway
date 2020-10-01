@@ -39,9 +39,9 @@ AUTH_FILE = SEP.join((AUTH_DIR, "fastway_auth.json"))
 TOKEN_FILE = SEP.join((AUTH_DIR, "fastway_token.json"))
 
 # Data file path constants for this project.
-LOG_FILE = SEP.join((RESULTS_DIR, "log.json"))
-LABELS_FILE = SEP.join((TRACKING_DIR, "labels.csv"))
-RESULTS_FILE = SEP.join((RESULTS_DIR, "results.csv"))
+LOG_FILE = SEP.join((RESULTS_DIR, "fastway_log.json"))
+LABELS_FILE = SEP.join((TRACKING_DIR, "fastway_labels.csv"))
+RESULTS_FILE = SEP.join((RESULTS_DIR, "fastway_results.csv"))
 
 # Endpoint URLs for the myFastway API service.
 TOKEN_URL = "https://identity.fastway.org/connect/token"
@@ -79,7 +79,15 @@ def renew_token(auth_file=AUTH_FILE, token_file=TOKEN_FILE):
         with open(auth_file, "r") as file:
             authorization = load(file)
     except FileNotFoundError as exception:
-        raise exception
+        credentials = {
+            "scope": "fw-fl2-api-au",
+            "grant_type" : "client_credentials"
+        }
+        credentials["client_id"] = input("client_id: ")
+        credentials["client_secret"] = input("client_secret: ")
+        with open(auth_file, "w") as file:
+            dump(credentials, file, indent=4)
+        return renew_token()
 
     response = post(TOKEN_URL, data=authorization)
 
@@ -88,7 +96,7 @@ def renew_token(auth_file=AUTH_FILE, token_file=TOKEN_FILE):
     token["token_expiry"] = expiry.isoformat()
 
     with open(token_file, "w") as file:
-        dump(token, file, indent=4, sort_keys=True)
+        dump(token, file, indent=4)
     print("Generated new access token:", token["access_token"][-4:])
     return get_token()
 
