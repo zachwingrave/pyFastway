@@ -39,6 +39,10 @@ RESULTS_FILE = SEP.join((TRACK_DIR, "results.csv"))
 TOKEN_URL = "https://identity.fastway.org/connect/token"
 TRACK_URL = "https://api.myfastway.com.au/api/track/label/"
 
+def sort_keys(data):
+    """Return key-sorted dict using JSON conversion."""
+    return loads(dumps(data, sort_keys=True))
+
 def get_labels(file=LABELS_FILE):
     """Return tracking labels from spreadsheet as a list."""
     with open(file, "r") as file:
@@ -103,9 +107,7 @@ def track_items(labels=["BD0010915392", "BD0010915414"]):
                 "status": "NSC"
             }
             response_data.append(data)
-        results.append(response_data[-1])
-        print(response_data[-1].keys())
-        input("continue?")
+        results.append(sort_keys(response_data[-1]))
 
     curr_date = datetime.now().isoformat()
     token_id = token["Authorization"][-4:]
@@ -156,11 +158,11 @@ def main():
     """Main function of the program."""
     system(CLEAR)
 
-    # labels = get_labels()
-    response = track_items()
+    labels = get_labels()
+    response = track_items(labels)
 
-    # write_results(response)
-    print_results(response)
+    write_results(response)
+    # print_results(response)
 
     system(CLEAR)
 
