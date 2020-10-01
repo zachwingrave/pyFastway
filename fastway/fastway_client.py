@@ -151,7 +151,7 @@ def write_results(response, file=RESULTS_FILE):
     response["duration"] = " ".join(("Fetched in", str(response["duration"]), "seconds"))
 
     with open(LOG_FILE, "a", newline="\n") as file:
-        dump(response, file, indent=4, sort_keys=True)
+        dump(response, file, indent=4)
         file.write("\n")
 
 def main():
@@ -162,7 +162,6 @@ def main():
     response = track_items(labels)
 
     write_results(response)
-    # print_results(response)
 
     system(CLEAR)
 
