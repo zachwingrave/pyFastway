@@ -1,15 +1,14 @@
 from json import dump, dumps, load, loads
+from datetime import datetime, timedelta
+from os import system, name, path
+
 from requests import get, post
 from pandas import read_csv
 from csv import writer
 
-from datetime import datetime, timedelta
-from os import system, name, path
 from time import time
+from tqdm import tqdm
 from sys import argv
-
-from threading import Thread
-from itertools import cycle
 
 # OS variables.
 if name == "nt":
@@ -56,7 +55,8 @@ def get_labels(labels_file=LABELS_FILE):
     with open(labels_file, "r") as file:
         data = read_csv(file, usecols=["Tracking Number"]).values.tolist()
     labels = []
-    for label in data:
+    print("Getting labels from fastway_labels.csv")
+    for label in tqdm(data):
         labels.append(label[0])
     return labels
 
@@ -107,7 +107,8 @@ def track_items(labels=["BD0010915392", "BD0010915414"]):
 
     token = get_token()
 
-    for label in labels:
+    print("Getting API responses from fastway.org")
+    for label in tqdm(labels):
         response = get("".join((TRACKING_URL, label)), headers=token)
         response_data = loads(response.text)["data"]
         if response_data == NOSCAN:
@@ -141,14 +142,18 @@ def track_items(labels=["BD0010915392", "BD0010915414"]):
 def print_results(response):
     """Print tracking API results to console for each label in response."""
     counter = 0
+    input("Press [ENTER] to see results.")
     for item in response["results"]:
+        system(CLEAR)
+        counter = counter + 1
         print(dumps(item, indent=4, sort_keys=True))
-        print(" ".join(("Record", str(counter + 1), "of", response["records"])))
         print(" ".join(("Fetched with access token:", response["token_id"])))
         print(" ".join(("Fetched in", str(response["duration"]), "seconds")))
-        input("Press [ENTER] to continue: ")
-        counter = counter + 1
-        system(CLEAR)
+        print(" ".join(("Record", str(counter), "of", response["records"])))
+        option = input("Press [ENTER] to continue or type [q] to quit: ")
+        if option.lower() == "q":
+            break
+    system(CLEAR)
 
 def write_results(response, results_file=RESULTS_FILE):
     """Write tracking API results for labels into /tracking/results.csv."""
@@ -158,7 +163,8 @@ def write_results(response, results_file=RESULTS_FILE):
         headers = response["results"][0].keys()
         csv_writer.writerow(headers)
 
-        for item in response["results"]:
+        print("Writing results to fastway_results.csv")
+        for item in tqdm(response["results"]):
             csv_writer.writerow(item.values())
 
 def write_log(response, log_file=LOG_FILE):
