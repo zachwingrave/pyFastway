@@ -6,11 +6,12 @@ from csv import writer
 from datetime import datetime, timedelta
 from os import system, name, path
 from time import time
+from sys import argv
 
 from threading import Thread
 from itertools import cycle
 
-# Define OS variables.
+# OS variables.
 if name == "nt":
     SEP = "\\"
     CLEAR = "cls"
@@ -18,44 +19,51 @@ else:
     SEP = "/"
     CLEAR = "clear"
 
+# Command line arguments.
+ARGS = [
+    "write",
+    "print"
+]
+
 # A noscan response.text is an empty list.
 NOSCAN = []
 
 # Directory file path constants for this project.
 ROOT_DIR = path.dirname(path.abspath(__file__))
 AUTH_DIR = SEP.join((ROOT_DIR, "auth"))
-TRACK_DIR = SEP.join((ROOT_DIR, "track"))
+RESULTS_DIR = SEP.join((ROOT_DIR, "results"))
+TRACKING_DIR = SEP.join((ROOT_DIR, "tracking"))
 
 # Authentication file path constants for this project.
 AUTH_FILE = SEP.join((AUTH_DIR, "fastway_auth.json"))
 TOKEN_FILE = SEP.join((AUTH_DIR, "fastway_token.json"))
 
-# Log file path constants for this project.
-LOG_FILE = SEP.join((TRACK_DIR, "log.json"))
-LABELS_FILE = SEP.join((TRACK_DIR, "labels.csv"))
-RESULTS_FILE = SEP.join((TRACK_DIR, "results.csv"))
+# Data file path constants for this project.
+LOG_FILE = SEP.join((RESULTS_DIR, "log.json"))
+LABELS_FILE = SEP.join((TRACKING_DIR, "labels.csv"))
+RESULTS_FILE = SEP.join((RESULTS_DIR, "results.csv"))
 
 # Endpoint URLs for the myFastway API service.
 TOKEN_URL = "https://identity.fastway.org/connect/token"
-TRACK_URL = "https://api.myfastway.com.au/api/track/label/"
+TRACKING_URL = "https://api.myfastway.com.au/api/track/label/"
 
 def sort_keys(data):
     """Return key-sorted dict using JSON conversion."""
     return loads(dumps(data, sort_keys=True))
 
-def get_labels(file=LABELS_FILE):
+def get_labels(labels_file=LABELS_FILE):
     """Return tracking labels from spreadsheet as a list."""
-    with open(file, "r") as file:
+    with open(labels_file, "r") as file:
         data = read_csv(file, usecols=["Tracking Number"]).values.tolist()
     labels = []
     for label in data:
         labels.append(label[0])
     return labels
 
-def get_token(file=TOKEN_FILE):
+def get_token(token_file=TOKEN_FILE):
     """Return API bearer token for tracking endpoint as a header string."""
     try:
-        with open(file, "r") as file:
+        with open(token_file, "r") as file:
             token = load(file)
             if datetime.now().isoformat() < token["token_expiry"]:
                 credentials = (token["token_type"], token["access_token"])
@@ -92,7 +100,7 @@ def track_items(labels=["BD0010915392", "BD0010915414"]):
     token = get_token()
 
     for label in labels:
-        response = get("".join((TRACK_URL, label)), headers=token)
+        response = get("".join((TRACKING_URL, label)), headers=token)
         response_data = loads(response.text)["data"]
         if response_data == NOSCAN:
             data = {
@@ -123,7 +131,7 @@ def track_items(labels=["BD0010915392", "BD0010915414"]):
     }
 
 def print_results(response):
-    """Print tracking API results for each label in response."""
+    """Print tracking API results to console for each label in response."""
     counter = 0
     for item in response["results"]:
         print(dumps(item, indent=4, sort_keys=True))
@@ -134,9 +142,9 @@ def print_results(response):
         counter = counter + 1
         system(CLEAR)
 
-def write_results(response, file=RESULTS_FILE):
-    """Write tracking API results for labels into /track/results.csv."""
-    with open(file, "w", newline="") as file:
+def write_results(response, results_file=RESULTS_FILE):
+    """Write tracking API results for labels into /tracking/results.csv."""
+    with open(results_file, "w", newline="") as file:
         csv_writer = writer(file)
 
         headers = response["results"][0].keys()
@@ -145,26 +153,48 @@ def write_results(response, file=RESULTS_FILE):
         for item in response["results"]:
             csv_writer.writerow(item.values())
 
+def write_log(response, log_file=LOG_FILE):
+    """Write tracking API results metadata into /results/log.json."""
+    try:
+        with open(log_file, "r") as file:
+            log = load(file)
+    except FileNotFoundError as exception:
+        log = {
+            "data": []
+        }
+
     response.pop("results", None)
-    response["records"] = " ".join(("Fetched ", response["records"], "records"))
+    response["records"] = " ".join(("Fetched", response["records"], "records"))
     response["token_id"] = " ".join(("Fetched with access token:", response["token_id"]))
     response["duration"] = " ".join(("Fetched in", str(response["duration"]), "seconds"))
 
-    with open(LOG_FILE, "a", newline="\n") as file:
-        dump(response, file, indent=4)
-        file.write("\n")
+    log["data"].append(response)
+    with open(log_file, "w") as file:
+        dump(log, file, indent=4)
 
-def main():
+def main(mode="write"):
     """Main function of the program."""
     system(CLEAR)
 
     labels = get_labels()
     response = track_items(labels)
 
-    write_results(response)
+    if mode == "write":
+        write_results(response)
+    elif mode == "print":
+        print_results(response)
+
+    write_log(response)
 
     system(CLEAR)
 
 # Execute the main function.
 if __name__ == "__main__":
-    main()
+
+    if len(argv) > 1:
+        mode = argv[1]
+        if mode not in ARGS:
+            raise ValueError("Invalid argument '%s'" % mode)
+        main(mode)
+    else:
+        main()
