@@ -130,4 +130,3 @@ dmypy.json
 
 # VS Code files
 *.code-workspace
-/temp
