@@ -3,7 +3,7 @@ A client for the RESTful myFastway API service. Official API documentation can b
 
 ## Installation and Setup
 1. Install [project dependencies](#installing-python-and-dependencies).
-2. Place `labels.csv` in `pyFastway/fastway/tracking/`.
+2. Place `fastway/labels.csv` in `pyFastway/fastway/tracking/`.
 3. Run program with `python pyFastway/fastway/fastway_client.py`.
 4. Enter `client_id` and `client_secret` from [your myFastway account](https://myfastway.com.au/#/admin/api-keys/list) on first run.
 
