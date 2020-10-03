@@ -31,10 +31,11 @@ python pyFastway/fastway/fastway_client.py write
 ### Installing Python and Dependencies
 Python 3 must be installed. For information on downloading and installing Python, visit the [official downloads page](https://www.python.org/downloads/).
 
-The following packages must also be installed with Pip:
+The following packages and their dependencies must also be installed with Pip:
 
 * [requests](https://pypi.org/project/requests/)
 * [pandas](https://pypi.org/project/pandas/)
+* [tqdm](https://pypi.org/project/tqdm/)
 
 For information on installing Pip and Python packages, read [this tutorial on w3schools](https://www.w3schools.com/python/python_pip.asp).
 
