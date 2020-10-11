@@ -1,6 +1,7 @@
 from json import dump, dumps, load, loads
 from datetime import datetime, timedelta
 from os import system, name, path
+from logging import logging
 
 from requests import get, post
 from pandas import read_csv
@@ -10,6 +11,9 @@ from time import time
 from tqdm import tqdm
 from sys import argv
 
+logging.info("Imports complete.")
+logging.info("Instantiating OS constants.")
+
 # OS variables.
 if name == "nt":
     SEP = "\\"
@@ -17,6 +21,8 @@ if name == "nt":
 else:
     SEP = "/"
     CLEAR = "clear"
+
+logging.info("Instantiating program constants.")
 
 # Command line arguments.
 ARGS = [
@@ -27,11 +33,15 @@ ARGS = [
 # A noscan response.text is an empty list.
 NOSCAN = []
 
+logging.info("Instantiating directory constants.")
+
 # Directory file path constants for this project.
 ROOT_DIR = path.dirname(path.abspath(__file__))
 AUTH_DIR = SEP.join((ROOT_DIR, "auth"))
 RESULTS_DIR = SEP.join((ROOT_DIR, "results"))
 TRACKING_DIR = SEP.join((ROOT_DIR, "tracking"))
+
+logging.info("Instantiating path constants.")
 
 # Authentication file path constants for this project.
 AUTH_FILE = SEP.join((AUTH_DIR, "fastway_auth.json"))
@@ -42,16 +52,21 @@ LOG_FILE = SEP.join((RESULTS_DIR, "fastway_log.json"))
 LABELS_FILE = SEP.join((TRACKING_DIR, "fastway_labels.csv"))
 RESULTS_FILE = SEP.join((RESULTS_DIR, "fastway_results.csv"))
 
+logging.info("Instantiating endpoint constants.")
+
 # Endpoint URLs for the myFastway API service.
 TOKEN_URL = "https://identity.fastway.org/connect/token"
 TRACKING_URL = "https://api.myfastway.com.au/api/track/label/"
 
 def sort_keys(data):
     """Return key-sorted dict using JSON conversion."""
+    logging.info("Entering sort_keys() function.")
     return loads(dumps(data, sort_keys=True))
 
 def get_labels(labels_file=LABELS_FILE):
     """Return tracking labels from spreadsheet as a list."""
+    logging.info("Entering get_labels() function.")
+    logging.info(":".join(("Opening file", labels_file)))
     with open(labels_file, "r") as file:
         data = read_csv(file, usecols=["Tracking Number"]).values.tolist()
     labels = []
