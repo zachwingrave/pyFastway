@@ -196,10 +196,12 @@ def write_results(response, results_file=RESULTS_FILE):
             csv_writer.writerow(item.values())
 
 def write_log(response):
+    logging.info("--- FINISHED ---")
     logging.info(" ".join(("Fetched at", str(response["datetime"]))))
     logging.info(" ".join(("Fetched", response["records"], "records")))
     logging.info(" ".join(("Fetched with access token:", response["token_id"])))
     logging.info(" ".join(("Fetched in", str(response["duration"]), "seconds")))
+    logging.info("--- END ---")
 
 def write_log_json(response, log_file=LOG_FILE):
     logging.info("Entering write_log() function.")
@@ -240,6 +242,7 @@ def main(mode="write"):
 
 # Execute the main function.
 if __name__ == "__main__":
+    logging.inf("--- START ---")
     logging.info("fastway_client.py has been called as main.")
 
     if len(argv) > 1:
