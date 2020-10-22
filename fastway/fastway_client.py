@@ -169,7 +169,6 @@ def print_results(response):
     """Print tracking API results to console for each label in response."""
     logging.info("Entering print_reuslts() function.")
     counter = 0
-    input("Press [ENTER] to see results.")
     for item in response["results"]:
         system(CLEAR)
         counter = counter + 1
@@ -191,9 +190,7 @@ def write_results(response, results_file=RESULTS_FILE):
         headers = response["results"][0].keys()
         csv_writer.writerow(headers)
 
-        log_msg = "Writing results to fastway_results.csv"
-        logging.info(log_msg)
-        print(log_msg)
+        logging.info("Writing results to fastway_results.csv")
 
         for item in response["results"]:
             csv_writer.writerow(item.values())
