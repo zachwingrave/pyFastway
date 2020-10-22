@@ -1,7 +1,7 @@
 from json import dump, dumps, load, loads
 from datetime import datetime, timedelta
 from os import system, name, path
-from logging import logging
+import logging
 
 from requests import get, post
 from pandas import read_csv
@@ -11,9 +11,6 @@ from time import time
 from tqdm import tqdm
 from sys import argv
 
-logging.info("Imports complete.")
-logging.info("Instantiating OS constants.")
-
 # OS variables.
 if name == "nt":
     SEP = "\\"
@@ -21,8 +18,6 @@ if name == "nt":
 else:
     SEP = "/"
     CLEAR = "clear"
-
-logging.info("Instantiating program constants.")
 
 # Command line arguments.
 ARGS = [
@@ -33,26 +28,29 @@ ARGS = [
 # A noscan response.text is an empty list.
 NOSCAN = []
 
-logging.info("Instantiating directory constants.")
-
-# Directory file path constants for this project.
+# Root directory and log file constants.
 ROOT_DIR = path.dirname(path.abspath(__file__))
+LOG_FILE = SEP.join((ROOT_DIR, "log", "fastway.log"))
+
+logging.basicConfig (
+    filename=LOG_FILE,
+    level=logging.INFO,
+    format="%(levelname)s:%(asctime)s %(message)s",
+    datefmt="%m/%d/%Y %I:%M:%S %p"
+)
+
+# Directory constants for this project.
 AUTH_DIR = SEP.join((ROOT_DIR, "auth"))
 RESULTS_DIR = SEP.join((ROOT_DIR, "results"))
 TRACKING_DIR = SEP.join((ROOT_DIR, "tracking"))
-
-logging.info("Instantiating path constants.")
 
 # Authentication file path constants for this project.
 AUTH_FILE = SEP.join((AUTH_DIR, "fastway_auth.json"))
 TOKEN_FILE = SEP.join((AUTH_DIR, "fastway_token.json"))
 
 # Data file path constants for this project.
-LOG_FILE = SEP.join((RESULTS_DIR, "fastway_log.json"))
 LABELS_FILE = SEP.join((TRACKING_DIR, "fastway_labels.csv"))
 RESULTS_FILE = SEP.join((RESULTS_DIR, "fastway_results.csv"))
-
-logging.info("Instantiating endpoint constants.")
 
 # Endpoint URLs for the myFastway API service.
 TOKEN_URL = "https://identity.fastway.org/connect/token"
@@ -70,17 +68,22 @@ def get_labels(labels_file=LABELS_FILE):
     with open(labels_file, "r") as file:
         data = read_csv(file, usecols=["Tracking Number"]).values.tolist()
     labels = []
-    print("Getting labels from fastway_labels.csv")
-    for label in tqdm(data):
+    log_msg = "Getting labels from fastway_labels.csv"
+    logging.info(log_msg)
+    for label in data:
         labels.append(label[0])
     return labels
 
 def get_token(token_file=TOKEN_FILE):
     """Return API bearer token for tracking endpoint as a header string."""
+    logging.info("Entering get_token() function.")
     try:
         with open(token_file, "r") as file:
             token = load(file)
             if datetime.now().isoformat() < token["token_expiry"]:
+                log_msg = " ".join(("Using existing access token:", token["access_token"][-4:]))
+                logging.info(log_msg)
+                print(log_msg)
                 credentials = (token["token_type"], token["access_token"])
                 return { "Authorization": " ".join(credentials) }
             else:
@@ -90,6 +93,7 @@ def get_token(token_file=TOKEN_FILE):
 
 def renew_token(auth_file=AUTH_FILE, token_file=TOKEN_FILE):
     """Put new token in /auth/fastway_token.json and return get_token()."""
+    logging.info("Entering renew_token() function.")
     try:
         with open(auth_file, "r") as file:
             authorization = load(file)
@@ -112,17 +116,25 @@ def renew_token(auth_file=AUTH_FILE, token_file=TOKEN_FILE):
 
     with open(token_file, "w") as file:
         dump(token, file, indent=4)
-    print("Generated new access token:", token["access_token"][-4:])
+
+    log_msg = " ".join(("Generated new access token:", token["access_token"][-4:]))
+    logging.info(log_msg)
+    print(log_msg)
+
     return get_token()
 
 def track_items(labels=["BD0010915392", "BD0010915414"]):
     """Return tracking API results for labels as a dict."""
+    logging.info("Entering track_items() function.")
     start = time()
     results = []
 
     token = get_token()
 
-    print("Getting API responses from fastway.org")
+    log_msg = "Getting API responses from fastway.org"
+    logging.info(log_msg)
+    print(log_msg)
+
     for label in tqdm(labels):
         response = get("".join((TRACKING_URL, label)), headers=token)
         response_data = loads(response.text)["data"]
@@ -156,6 +168,7 @@ def track_items(labels=["BD0010915392", "BD0010915414"]):
 
 def print_results(response):
     """Print tracking API results to console for each label in response."""
+    logging.info("Entering print_reuslts() function.")
     counter = 0
     input("Press [ENTER] to see results.")
     for item in response["results"]:
@@ -172,17 +185,22 @@ def print_results(response):
 
 def write_results(response, results_file=RESULTS_FILE):
     """Write tracking API results for labels into /tracking/results.csv."""
+    logging.info("Entering write_results() function.")
     with open(results_file, "w", newline="") as file:
         csv_writer = writer(file)
 
         headers = response["results"][0].keys()
         csv_writer.writerow(headers)
 
-        print("Writing results to fastway_results.csv")
-        for item in tqdm(response["results"]):
+        log_msg = "Writing results to fastway_results.csv"
+        logging.info(log_msg)
+        print(log_msg)
+
+        for item in response["results"]:
             csv_writer.writerow(item.values())
 
 def write_log(response, log_file=LOG_FILE):
+    logging.info("Entering write_log() function.")
     """Write tracking API results metadata into /results/log.json."""
     try:
         with open(log_file, "r") as file:
@@ -203,6 +221,7 @@ def write_log(response, log_file=LOG_FILE):
 
 def main(mode="write"):
     """Main function of the program."""
+    logging.info("Entering main() function.")
     system(CLEAR)
 
     labels = get_labels()
@@ -213,17 +232,28 @@ def main(mode="write"):
     elif mode == "print":
         print_results(response)
 
-    write_log(response)
+    #write_log(response)
 
     system(CLEAR)
 
 # Execute the main function.
 if __name__ == "__main__":
+    logging.info("fastway_client.py has been called as main.")
 
     if len(argv) > 1:
         mode = argv[1]
         if mode not in ARGS:
             raise ValueError("Invalid argument '%s'" % mode)
+
+        # loglevel = argv[2]
+        # # assuming loglevel is bound to the string value obtained from the
+        # # command line argument. Convert to upper case to allow the user to
+        # # specify --log=DEBUG or --log=debug
+        # numeric_level = getattr(logging, loglevel.upper(), None)
+        # if not isinstance(numeric_level, int):
+        #     raise ValueError('Invalid log level: %s' % loglevel)
+        # logging.basicConfig(level=numeric_level, ...)
+
         main(mode)
     else:
         main()
