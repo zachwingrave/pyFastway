@@ -58,7 +58,6 @@ TRACKING_URL = "https://api.myfastway.com.au/api/track/label/"
 
 def sort_keys(data):
     """Return key-sorted dict using JSON conversion."""
-    logging.info("Entering sort_keys() function.")
     return loads(dumps(data, sort_keys=True))
 
 def get_labels(labels_file=LABELS_FILE):
@@ -199,7 +198,13 @@ def write_results(response, results_file=RESULTS_FILE):
         for item in response["results"]:
             csv_writer.writerow(item.values())
 
-def write_log(response, log_file=LOG_FILE):
+def write_log(response):
+    logging.info(" ".join(("Fetched at", str(response["datetime"]))))
+    logging.info(" ".join(("Fetched", response["records"], "records")))
+    logging.info(" ".join(("Fetched with access token:", response["token_id"])))
+    logging.info(" ".join(("Fetched in", str(response["duration"]), "seconds")))
+
+def write_log_json(response, log_file=LOG_FILE):
     logging.info("Entering write_log() function.")
     """Write tracking API results metadata into /results/log.json."""
     try:
@@ -232,7 +237,7 @@ def main(mode="write"):
     elif mode == "print":
         print_results(response)
 
-    #write_log(response)
+    write_log(response)
 
     system(CLEAR)
 
