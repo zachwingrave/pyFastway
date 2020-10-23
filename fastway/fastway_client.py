@@ -62,8 +62,7 @@ def sort_keys(data):
 
 def get_labels(labels_file=LABELS_FILE):
     """Return tracking labels from spreadsheet as a list."""
-    logging.info("Entering get_labels() function.")
-    logging.info(":".join(("Opening file", labels_file)))
+    logging.info("Entering get_labels() function")
     with open(labels_file, "r") as file:
         data = read_csv(file, usecols=["Tracking Number"]).values.tolist()
     labels = []
@@ -75,28 +74,30 @@ def get_labels(labels_file=LABELS_FILE):
 
 def get_token(token_file=TOKEN_FILE):
     """Return API bearer token for tracking endpoint as a header string."""
-    logging.info("Entering get_token() function.")
+    logging.info("Entering get_token() function")
     try:
         with open(token_file, "r") as file:
             token = load(file)
             if datetime.now().isoformat() < token["token_expiry"]:
-                log_msg = " ".join(("Using existing access token:", token["access_token"][-4:]))
+                log_msg = " ".join(("Using access token:", token["access_token"][-4:]))
                 logging.info(log_msg)
                 print(log_msg)
                 credentials = (token["token_type"], token["access_token"])
                 return { "Authorization": " ".join(credentials) }
             else:
                 return renew_token()
-    except FileNotFoundError:
+    except FileNotFoundError as exception:
+        logging.error(exception)
         return renew_token()
 
 def renew_token(auth_file=AUTH_FILE, token_file=TOKEN_FILE):
     """Put new token in /auth/fastway_token.json and return get_token()."""
-    logging.info("Entering renew_token() function.")
+    logging.info("Entering renew_token() function")
     try:
         with open(auth_file, "r") as file:
             authorization = load(file)
     except FileNotFoundError as exception:
+        logging.error(exception)
         credentials = {
             "scope": "fw-fl2-api-au",
             "grant_type" : "client_credentials"
@@ -124,7 +125,7 @@ def renew_token(auth_file=AUTH_FILE, token_file=TOKEN_FILE):
 
 def track_items(labels=["BD0010915392", "BD0010915414"]):
     """Return tracking API results for labels as a dict."""
-    logging.info("Entering track_items() function.")
+    logging.info("Entering track_items() function")
     start = time()
     results = []
 
@@ -167,7 +168,7 @@ def track_items(labels=["BD0010915392", "BD0010915414"]):
 
 def print_results(response):
     """Print tracking API results to console for each label in response."""
-    logging.info("Entering print_reuslts() function.")
+    logging.info("Entering print_reuslts() function")
     counter = 0
     for item in response["results"]:
         system(CLEAR)
@@ -183,7 +184,7 @@ def print_results(response):
 
 def write_results(response, results_file=RESULTS_FILE):
     """Write tracking API results for labels into /tracking/results.csv."""
-    logging.info("Entering write_results() function.")
+    logging.info("Entering write_results() function")
     with open(results_file, "w", newline="") as file:
         csv_writer = writer(file)
 
@@ -204,12 +205,13 @@ def write_log(response):
     logging.info("--- END ---")
 
 def write_log_json(response, log_file=LOG_FILE):
-    logging.info("Entering write_log() function.")
+    logging.info("Entering write_log_json() function")
     """Write tracking API results metadata into /results/log.json."""
     try:
         with open(log_file, "r") as file:
             log = load(file)
     except FileNotFoundError as exception:
+        logging.error(exception)
         log = {
             "data": []
         }
@@ -225,7 +227,7 @@ def write_log_json(response, log_file=LOG_FILE):
 
 def main(mode="write"):
     """Main function of the program."""
-    logging.info("Entering main() function.")
+    logging.info("Entering main() function")
     system(CLEAR)
 
     labels = get_labels()
@@ -242,8 +244,8 @@ def main(mode="write"):
 
 # Execute the main function.
 if __name__ == "__main__":
-    logging.inf("--- START ---")
-    logging.info("fastway_client.py has been called as main.")
+    logging.info("--- START ---")
+    logging.info("fastway_client.py has been called as main")
 
     if len(argv) > 1:
         mode = argv[1]
