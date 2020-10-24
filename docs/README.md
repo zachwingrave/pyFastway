@@ -37,6 +37,8 @@ The following packages and their dependencies must also be installed with Pip:
 * [pandas](https://pypi.org/project/pandas/)
 * [tqdm](https://pypi.org/project/tqdm/)
 
+Install all packages with: `pip install -r requirements.txt`
+
 For information on installing Pip and Python packages, read [this tutorial on w3schools](https://www.w3schools.com/python/python_pip.asp).
 
 ### Support
