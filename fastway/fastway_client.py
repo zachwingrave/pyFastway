@@ -1,15 +1,15 @@
 from json import dump, dumps, load, loads
 from datetime import datetime, timedelta
 from os import system, name, path
+from csv import writer
+from time import time
+from sys import argv
 import logging
 
+# Packages that require installation.
 from requests import get, post
 from pandas import read_csv
-from csv import writer
-
-from time import time
 from tqdm import tqdm
-from sys import argv
 
 # OS variables.
 if name == "nt":
