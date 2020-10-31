@@ -1,7 +1,8 @@
+# Packages in the standard library.
 from json import dump, dumps, load, loads
 from datetime import datetime, timedelta
 from os import system, name, path
-from csv import writer
+from csv import reader, writer
 from time import time
 from sys import argv
 import logging
@@ -168,10 +169,18 @@ def track_items(labels=["BD0010915392", "BD0010915414"]):
 
 def print_results(response):
     """Print tracking API results to console for each label in response."""
-    logging.info("Entering print_reuslts() function")
+    logging.info("Entering print_results() function")
+    option = input("Clear screen before each result? [Y/n]: ")
+
     counter = 0
+    clear = True
+
+    if option.lower() == "n":
+        clear = False
+
     for item in response["results"]:
-        system(CLEAR)
+        if clear:
+            system(CLEAR)
         counter = counter + 1
         print(dumps(item, indent=4, sort_keys=True))
         print(" ".join(("Fetched with access token:", response["token_id"])))
@@ -180,7 +189,6 @@ def print_results(response):
         option = input("Press [ENTER] to continue or type [q] to quit: ")
         if option.lower() == "q":
             break
-    system(CLEAR)
 
 def write_results(response, results_file=RESULTS_FILE):
     """Write tracking API results for labels into /tracking/results.csv."""
@@ -204,28 +212,7 @@ def write_log(response):
     logging.info(" ".join(("Fetched in", str(response["duration"]), "seconds")))
     logging.info("--- END ---")
 
-def write_log_json(response, log_file=LOG_FILE):
-    logging.info("Entering write_log_json() function")
-    """Write tracking API results metadata into /results/log.json."""
-    try:
-        with open(log_file, "r") as file:
-            log = load(file)
-    except FileNotFoundError as exception:
-        logging.error(exception)
-        log = {
-            "data": []
-        }
-
-    response.pop("results", None)
-    response["records"] = " ".join(("Fetched", response["records"], "records"))
-    response["token_id"] = " ".join(("Fetched with access token:", response["token_id"]))
-    response["duration"] = " ".join(("Fetched in", str(response["duration"]), "seconds"))
-
-    log["data"].append(response)
-    with open(log_file, "w") as file:
-        dump(log, file, indent=4)
-
-def main(mode="write"):
+def main(mode=None):
     """Main function of the program."""
     logging.info("Entering main() function")
     system(CLEAR)
@@ -237,9 +224,13 @@ def main(mode="write"):
         write_results(response)
     elif mode == "print":
         print_results(response)
+    elif mode == None:
+        write_results(response)
+        option = input("Would you like to print the results? [y/N]: ")
+        if option.lower() == "y":
+            print_results(response)
 
     write_log(response)
-
     system(CLEAR)
 
 # Execute the main function.
