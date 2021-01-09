@@ -42,7 +42,7 @@ Install all packages with: `pip install -r requirements.txt`
 For information on installing Pip and Python packages, read [this tutorial on w3schools](https://www.w3schools.com/python/python_pip.asp).
 
 ### Support
-Contact [zach@zachwingrave.com](mailto:zach@zachwingrave.com) for support. API documentation can be found [here](https://github.com/mindfulsoftware/myFastway.ApiClient/wiki).
+API documentation can be found [here](https://github.com/mindfulsoftware/myFastway.ApiClient/wiki).
 
 ### License
 This software is licensed under the [GNU General Public License v3](LICENSE.md).
