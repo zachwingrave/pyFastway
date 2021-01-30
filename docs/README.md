@@ -1,3 +1,5 @@
+[![Run on Repl.it](https://repl.it/badge/github/zachwingrave/pyFastway)](https://repl.it/github/zachwingrave/pyFastway)
+
 # pyFastway API Client
 A client for the RESTful myFastway API service. Official API documentation can be found [here](https://github.com/mindfulsoftware/myFastway.ApiClient/wiki).
 
